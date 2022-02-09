@@ -5,8 +5,10 @@
 using System;
 using System.Net.Sockets;
 using System.Threading;
+using System.Collections;
 using Unity.Collections;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.XR.ARKit;
 
 #if FACETRACKING
@@ -76,12 +78,32 @@ namespace Unity.Labs.FacialRemote
 
         void Start()
         {
+            StartCoroutine(GetRequest("https://www.apple.com.cn"));
+
             // Wait to be enabled on StartCapture
             enabled = false;
             if (m_StreamSettings == null)
             {
                 Debug.LogError("Stream settings is not assigned! Deactivating Client.");
                 gameObject.SetActive(false);
+            }
+        }
+
+        IEnumerator GetRequest(string uri)
+        {
+            using (UnityWebRequest webRequest = UnityWebRequest.Get(uri))
+            {
+                // Request and wait for the desired page.
+                yield return webRequest.SendWebRequest();
+
+                if (webRequest.isNetworkError || webRequest.isHttpError)
+                {
+                    Debug.LogError($"GET {uri} Error: {webRequest.error}");
+                }
+                else
+                {
+                    Debug.Log($"GET {uri} success");
+                }
             }
         }
 
